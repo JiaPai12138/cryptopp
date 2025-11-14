@@ -29,18 +29,25 @@ jobs:
       - name: Build cryptlib project with MSBuild
         run: |
           msbuild cryptlib.vcxproj /p:Configuration=Release /p:Platform=x64 /p:AdditionalOptions="/arch:AVX2"
+          7z a -t7z -m0=LZMA2 -mmt=on -mx=3 -md=4m -mfb=32 -ms=1g -mqs=on -sccUTF-8 -mtc=on -mta=on -mhe=on `
+            cryptlib-windows-x64.7z `
+            x64
 
       - name: vcpkg
         run: |
           vcpkg install cryptopp:x64-windows-static
           ls c:\vcpkg\installed\x64-windows-static\include\
+          7z a -t7z -m0=LZMA2 -mmt=on -mx=3 -md=4m -mfb=32 -ms=1g -mqs=on -sccUTF-8 -mtc=on -mta=on -mhe=on `
+            cryptlib-includes.7z `
+            c:\vcpkg\installed\x64-windows-static\include
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: cryptopp
           path: |
-            x64
+            cryptlib-windows-x64.7z
+            cryptlib-includes.7z
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -52,4 +59,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            x64
+            cryptlib-windows-x64.7z
+            cryptlib-includes.7z
