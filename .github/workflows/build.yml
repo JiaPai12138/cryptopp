@@ -1,0 +1,55 @@
+name: Build cryptlib on Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Generate date tag
+        shell: pwsh
+        run: |
+          $tag = (Get-Date).ToString("yyyyMMdd")
+          echo "REL_TAG=$tag" >> $env:GITHUB_ENV
+          echo "NAME_TAG=Release $tag" >> $env:GITHUB_ENV
+
+      - name: Setup NASM
+        uses: ilammy/setup-nasm@v1
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build cryptlib project with MSBuild
+        run: |
+          msbuild cryptlib.vcxproj /p:Configuration=Release /p:Platform=x64 /p:AdditionalOptions="/arch:AVX2"
+
+      - name: vcpkg
+        run: |
+          vcpkg install cryptopp:x64-windows-static
+          ls c:\vcpkg\installed\x64-windows-static\include\
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: cryptopp
+          path: |
+            x64
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.REL_TAG }}
+          name: ${{ env.NAME_TAG }}
+          draft: false
+          prerelease: false
+          files: |
+            x64
