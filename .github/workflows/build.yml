@@ -33,13 +33,11 @@ jobs:
             cryptlib-windows-x64.7z `
             x64
 
-      - name: vcpkg
+      - name: Compress headers into a zip
         run: |
-          vcpkg install cryptopp:x64-windows-static
-          ls c:\vcpkg\installed\x64-windows-static\include\
           7z a -t7z -m0=LZMA2 -mmt=on -mx=3 -md=4m -mfb=32 -ms=1g -mqs=on -sccUTF-8 -mtc=on -mta=on -mhe=on `
             cryptlib-includes.7z `
-            c:\vcpkg\installed\x64-windows-static\include
+            *.h
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
